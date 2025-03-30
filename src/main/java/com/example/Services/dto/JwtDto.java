@@ -1,4 +1,4 @@
-package com.example.Services.auth.dto;
+package com.example.Services.dto;
 
 public record JwtDto(
         String token

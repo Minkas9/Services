@@ -1,11 +1,8 @@
 package com.example.Services.model;
 
-
 import com.example.Services.enums.Role;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,17 +19,21 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Builder
-public class Customer implements UserDetails {
+@Table(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
+    @NotBlank(message = "Username is required")
     private String username;
+
+    @NotBlank(message = "Username is required")
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private Role customerRole;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(customerRole.name()));
-    }
 }
