@@ -1,7 +1,9 @@
 package com.example.Services.repository;
 
-import com.example.Services.model.Service;
+import com.example.Services.model.Services;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ServiceRepository extends JpaRepository<Service, Long> {
+@Repository
+public interface ServiceRepository extends JpaRepository<Services, Long> {
 }

@@ -21,7 +21,7 @@ public class DataLoader {
             userRepository.save(User.builder()
                     .username("admin")
                     .password(passwordEncoder.encode("admin"))
-                    .customerRole(Role.ADMIN)
+                    .role(Role.ADMIN)
                     .build());
         }
 
@@ -29,7 +29,7 @@ public class DataLoader {
             userRepository.save(User.builder()
                     .username("user")
                     .password(passwordEncoder.encode("user"))
-                    .customerRole(Role.CUSTOMER)
+                    .role(Role.CUSTOMER)
                     .build());
         }
     }

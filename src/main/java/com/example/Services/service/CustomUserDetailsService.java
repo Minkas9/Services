@@ -1,5 +1,6 @@
 package com.example.Services.service;
 
+import com.example.Services.model.User;
 import com.example.Services.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,9 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 var user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-                // Konvertuojame mūsų rolę į Spring Security Authority
                 List<SimpleGrantedAuthority> authorities = Collections
-                                .singletonList(new SimpleGrantedAuthority("ROLE_" + user.getCustomerRole().name()));
+                                .singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
                 return new org.springframework.security.core.userdetails.User(
                                 user.getUsername(),

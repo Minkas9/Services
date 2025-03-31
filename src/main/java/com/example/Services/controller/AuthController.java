@@ -1,56 +1,56 @@
 package com.example.Services.controller;
 
-import com.example.Services.dto.JwtDto;
-import com.example.Services.dto.LoginRequest;
-import com.example.Services.utility.JwtUtil;
 import com.example.Services.model.User;
 import com.example.Services.service.UserService;
+import com.example.Services.utility.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        if (userService.existsByUsername(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
-        }
-
-        userService.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
-    }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+        log.info("Login attempt for user: {}", loginRequest.getUsername());
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.username(),
-                            loginRequest.password()
-                    )
-            );
-            String token = jwtUtil.generateToken(loginRequest.username());
-            return ResponseEntity.ok(token);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userDetails);
+            log.info("Login successful for user: {}", loginRequest.getUsername());
+            return ResponseEntity.ok(new JwtResponse(token));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed: " + e.getMessage());
+            log.error("Login failed for user: {}", loginRequest.getUsername(), e);
+            return ResponseEntity.status(401).body("Invalid username or password");
         }
+    }
+}
+
+class JwtResponse {
+    private final String token;
+
+    public JwtResponse(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
     }
 }

@@ -34,6 +34,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role customerRole;
+    @Column(name = "customer_role")
+    private Role role;
 
 }

@@ -17,12 +17,17 @@ import java.util.Collections;
 public class AuthenticationConfig {
 
     private final UserDetailsService userDetailsService;
-    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authConfig
-    ) throws Exception {
+            AuthenticationConfiguration authConfig,
+            UserDetailsService userDetailsService,
+            BCryptPasswordEncoder passwordEncoder) throws Exception {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
