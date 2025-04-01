@@ -1,8 +1,12 @@
 package com.example.Services.controller;
 
+import com.example.Services.dto.JwtResponse;
 import com.example.Services.model.User;
 import com.example.Services.service.UserService;
 import com.example.Services.utility.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Authentication management APIs")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtUtil jwtUtil;
 
+    @Operation(summary = "Login user", description = "Authenticates user and returns JWT token")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+    public ResponseEntity<?> login(
+            @Parameter(description = "User credentials", required = true) @RequestBody User loginRequest) {
         log.info("Login attempt for user: {}", loginRequest.getUsername());
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -40,17 +47,5 @@ public class AuthController {
             log.error("Login failed for user: {}", loginRequest.getUsername(), e);
             return ResponseEntity.status(401).body("Invalid username or password");
         }
-    }
-}
-
-class JwtResponse {
-    private final String token;
-
-    public JwtResponse(String token) {
-        this.token = token;
-    }
-
-    public String getToken() {
-        return token;
     }
 }
