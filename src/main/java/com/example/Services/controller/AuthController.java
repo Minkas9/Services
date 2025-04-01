@@ -1,6 +1,7 @@
 package com.example.Services.controller;
 
 import com.example.Services.dto.JwtResponse;
+import com.example.Services.dto.LoginRequestDto;
 import com.example.Services.model.User;
 import com.example.Services.service.UserService;
 import com.example.Services.utility.JwtUtil;
@@ -33,7 +34,7 @@ public class AuthController {
     @Operation(summary = "Login user", description = "Authenticates user and returns JWT token")
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @Parameter(description = "User credentials", required = true) @RequestBody User loginRequest) {
+            @Parameter(description = "User credentials", required = true) @RequestBody LoginRequestDto loginRequest) {
         log.info("Login attempt for user: {}", loginRequest.getUsername());
         try {
             Authentication authentication = authenticationManager.authenticate(
