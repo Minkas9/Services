@@ -22,6 +22,7 @@ public class DataLoader {
                     .username("admin")
                     .password(passwordEncoder.encode("admin"))
                     .role(Role.ADMIN)
+                    .banned(false)
                     .build());
         }
 
@@ -30,6 +31,17 @@ public class DataLoader {
                     .username("user")
                     .password(passwordEncoder.encode("user"))
                     .role(Role.CUSTOMER)
+                    .banned(false)
+                    .build());
+        }
+
+        if (userRepository.findByUsername("banned").isEmpty()) {
+            userRepository.save(User.builder()
+                    .username("banned")
+                    .password(passwordEncoder.encode("banned"))
+                    .role(Role.CUSTOMER)
+                    .banned(true)
+                    .banReason("Violation of terms of service")
                     .build());
         }
     }

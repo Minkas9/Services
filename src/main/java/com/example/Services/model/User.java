@@ -37,4 +37,9 @@ public class User {
     @Column(name = "customer_role")
     private Role role;
 
+    @Column(name = "is_banned")
+    private boolean banned;
+
+    @Column(name = "ban_reason")
+    private String banReason;
 }
