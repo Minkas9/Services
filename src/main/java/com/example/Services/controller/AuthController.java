@@ -1,10 +1,9 @@
 package com.example.Services.controller;
 
-import com.example.Services.dto.JwtResponse;
 import com.example.Services.dto.LoginRequestDto;
-import com.example.Services.model.User;
+import com.example.Services.jwtSecurity.JwtResponse;
+import com.example.Services.jwtSecurity.JwtUtil;
 import com.example.Services.service.UserService;
-import com.example.Services.utility.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

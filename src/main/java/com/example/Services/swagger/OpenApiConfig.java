@@ -1,4 +1,4 @@
-package com.example.Services.config;
+package com.example.Services.swagger;
 
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,7 @@ public class OpenApiConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public")
-                .packagesToScan("com.example.Services.controller") // Adjust the package path if necessary
+                .packagesToScan("com.example.Services.controller")
                 .build();
     }
 }

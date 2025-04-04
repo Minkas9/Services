@@ -1,4 +1,4 @@
-package com.example.Services.config;
+package com.example.Services.jwtSecurity;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Collections;
-//aa
+
 @Configuration
 @RequiredArgsConstructor
 public class AuthenticationConfig {

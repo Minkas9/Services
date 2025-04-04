@@ -1,4 +1,4 @@
-package com.example.Services.config;
+package com.example.Services.jwtSecurity;
 
 import com.example.Services.enums.Role;
 import com.example.Services.model.User;
