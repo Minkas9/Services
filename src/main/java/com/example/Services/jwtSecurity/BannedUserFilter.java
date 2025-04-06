@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -38,8 +39,17 @@ public class BannedUserFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Get the authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Skip check if not authenticated
+        if (authentication == null || !authentication.isAuthenticated()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Get the authenticated user
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails) {
             String username = ((UserDetails) principal).getUsername();
 

@@ -45,6 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            log.debug("Loaded user details: {}", userDetails);
+            log.debug("User authorities: {}", userDetails.getAuthorities());
 
             if (jwtUtil.validateToken(jwt)) {
                 log.info("Valid token found for user: {}", username);
@@ -55,6 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 log.debug("Authentication set in SecurityContext for user: {}", username);
+                log.debug("Current authentication: {}", SecurityContextHolder.getContext().getAuthentication());
             } else {
                 log.warn("Invalid token for user: {}", username);
             }

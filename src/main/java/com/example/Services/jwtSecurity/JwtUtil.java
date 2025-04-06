@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -24,6 +25,11 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         log.info("Generating token for user: {}", userDetails.getUsername());
         Map<String, Object> claims = new HashMap<>();
+        // Add authorities to claims
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .collect(Collectors.toList()));
+        log.info("Token claims: {}", claims);
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -41,10 +47,12 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         log.debug("Validating token");
         try {
-            Jwts.parserBuilder()
+            Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseClaimsJws(token)
+                    .getBody();
+            log.debug("Token claims: {}", claims);
             return !isTokenExpired(token);
         } catch (Exception e) {
             log.warn("Token validation failed: {}", e.getMessage());
