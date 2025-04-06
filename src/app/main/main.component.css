@@ -1,0 +1,25 @@
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.btn-sm {
+  margin-right: 5px;
+}
+
+.alert {
+  margin-bottom: 20px;
+}

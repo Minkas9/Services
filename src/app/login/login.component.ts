@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Router} from "@angular/router";
+import {ApiService} from "../services/api.service";
 
 @Component({
   selector: 'app-login',
@@ -12,25 +12,30 @@ export class LoginComponent {
   password = "";
   error = "";
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private apiService: ApiService, private router: Router) {
   }
 
   login() {
-    //sukuriame konstanta su viena headerio reiksme. Authorization : Basic encodedCreds
-    const headers = new HttpHeaders({
-      Authorization: "Basic " + btoa(this.username + ":" + this.password)
-    })
-
-    this.http.get("http://localhost:8080/api/auth/login", {headers, responseType: 'text'})
-      .subscribe({
-        next: () => {
-          localStorage.setItem("auth", btoa(this.username + ":" + this.password));
-          console.log(localStorage.getItem("auth"));
-          this.router.navigate(['/main']);
-        },
-        error: () => this.error = "Invalid credentials"
-      });
-
+    this.apiService.login(this.username, this.password).subscribe({
+      next: (response) => {
+        console.log('Login response:', response);
+        localStorage.setItem("token", response.token);
+        // Debug logging
+        const token = response.token;
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          console.log('Token payload:', payload);
+          console.log('Authorities:', payload.authorities);
+          console.log('Is admin check:', this.apiService.isAdmin());
+        } catch (error) {
+          console.error('Error parsing token:', error);
+        }
+        this.router.navigate(['/main']);
+      },
+      error: (err) => {
+        console.error("Login failed:", err);
+        this.error = "Invalid credentials";
+      }
+    });
   }
-
 }

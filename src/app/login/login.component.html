@@ -1,6 +1,48 @@
-<div>
-  <h2>Login</h2>
-  <input [(ngModel)]="username" placeholder="Username">
-  <input [(ngModel)]="password" placeholder="Password">
-  <button (click)="login()">Login</button>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white text-center">
+          <h2>Login</h2>
+        </div>
+        <div class="card-body">
+          <div *ngIf="error" class="alert alert-danger" role="alert">
+            {{ error }}
+          </div>
+          <form (ngSubmit)="login()">
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                [(ngModel)]="username"
+                name="username"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                [(ngModel)]="password"
+                name="password"
+                required
+              />
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <small class="text-muted">Demo Credentials:</small><br />
+          <small class="text-muted">Admin: admin/admin</small><br />
+          <small class="text-muted">User: user/user</small>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,1 +1,190 @@
-<p>main works!</p>
+<div class="container mt-4">
+  <!-- Header with Role Indicator -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Services Management</h1>
+      <div *ngIf="isAdmin" class="badge bg-primary">Admin Role</div>
+      <div *ngIf="!isAdmin" class="badge bg-secondary">User Role</div>
+    </div>
+    <button class="btn btn-danger" (click)="logout()">Logout</button>
+  </div>
+
+  <!-- Error and Success Messages -->
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  <div *ngIf="success" class="alert alert-success" role="alert">
+    {{ success }}
+  </div>
+
+  <!-- Admin Actions Panel -->
+  <div *ngIf="isAdmin" class="card mb-4 border-primary">
+    <div
+      class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+    >
+      <h3 class="mb-0">Admin Controls</h3>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-12">
+          <h4>Add New Service</h4>
+          <form (ngSubmit)="addService()" class="mt-3">
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                [(ngModel)]="newService.name"
+                name="name"
+                required
+                placeholder="Enter service name"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                id="description"
+                [(ngModel)]="newService.description"
+                name="description"
+                rows="3"
+                placeholder="Enter service description"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-plus-circle me-2"></i>Add Service
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services Table -->
+  <div class="card">
+    <div class="card-header bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Available Services</h3>
+        <span *ngIf="isAdmin" class="text-muted"
+          >Admin can edit and delete services</span
+        >
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th *ngIf="isAdmin" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of services">
+              <td>{{ service.id }}</td>
+              <td>{{ service.name }}</td>
+              <td>{{ service.description }}</td>
+              <td *ngIf="isAdmin" class="text-center">
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-outline-warning btn-sm"
+                    (click)="startEdit(service)"
+                    title="Edit service"
+                  >
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button
+                    class="btn btn-outline-danger btn-sm ms-2"
+                    (click)="deleteService(service.id!)"
+                    title="Delete service"
+                  >
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="services.length === 0">
+              <td [colSpan]="isAdmin ? 4 : 3" class="text-center">
+                <div class="alert alert-info mb-0">No services available</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Service Modal -->
+  <div
+    *ngIf="editingService"
+    class="modal fade show"
+    style="display: block"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title">
+            <i class="bi bi-pencil-square me-2"></i>Edit Service
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="cancelEdit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="editName" class="form-label">Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="editName"
+                [(ngModel)]="editingService.name"
+                name="editName"
+                required
+                placeholder="Enter service name"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="editDescription" class="form-label"
+                >Description</label
+              >
+              <textarea
+                class="form-control"
+                id="editDescription"
+                [(ngModel)]="editingService.description"
+                name="editDescription"
+                rows="3"
+                placeholder="Enter service description"
+              ></textarea>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="cancelEdit()"
+              >
+                <i class="bi bi-x-circle me-2"></i>Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn-warning"
+                (click)="updateService()"
+              >
+                <i class="bi bi-check-circle me-2"></i>Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Backdrop -->
+  <div *ngIf="editingService" class="modal-backdrop fade show"></div>
+</div>
