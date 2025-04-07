@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Slf4j // ✅ Enables logging
+@Slf4j
 @RestController
 @RequestMapping("/api/service")
 @RequiredArgsConstructor
