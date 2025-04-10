@@ -70,7 +70,7 @@ public class DataLoader {
                     .password(passwordEncoder.encode("banned"))
                     .role(Role.CUSTOMER)
                     .banned(true)
-                    .banReason("Violation of terms of service")
+                    .banReason("Your account is banned for violation of terms of service")
                     .build());
         }
     }

@@ -41,6 +41,9 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails) {
         log.info("Generating JWT token for user: {}", userDetails.getUsername());
         Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .toList());
         return createToken(claims, userDetails.getUsername());
     }
 
