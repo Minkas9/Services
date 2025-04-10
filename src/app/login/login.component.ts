@@ -34,7 +34,13 @@ export class LoginComponent {
       },
       error: (err) => {
         console.error("Login failed:", err);
-        this.error = "Invalid credentials";
+        
+        // Check if the error is due to a banned account
+        if (err.status === 403 && err.error && err.error.error === "Account Banned") {
+          this.error = err.error.message || "Your account has been banned";
+        } else {
+          this.error = "Invalid credentials";
+        }
       }
     });
   }

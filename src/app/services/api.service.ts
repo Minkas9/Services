@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Service } from '../models/service.model';
 import { JwtResponse } from '../models/jwt-response.model';
@@ -25,7 +26,22 @@ export class ApiService {
    * @returns Observable with JWT response containing token
    */
   login(username: string, password: string): Observable<JwtResponse> {
-    return this.http.post<JwtResponse>(`${this.apiUrl}/auth/login`, { username, password });
+    return this.http.post<JwtResponse>(`${this.apiUrl}/auth/login`, { username, password })
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Handles HTTP errors from API requests
+   * @param error - The HTTP error response
+   * @returns Observable that throws the error for the component to handle
+   */
+  private handleError(error: HttpErrorResponse) {
+    console.error('API Error:', error);
+    
+    // Let the component handle the error
+    return throwError(() => error);
   }
 
   /**
@@ -34,7 +50,10 @@ export class ApiService {
    * @returns Observable with array of services
    */
   getAllServices(): Observable<Service[]> {
-    return this.http.get<Service[]>(`${this.apiUrl}/service`);
+    return this.http.get<Service[]>(`${this.apiUrl}/service`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -43,7 +62,10 @@ export class ApiService {
    * @returns Observable with the requested service
    */
   getServiceById(id: number): Observable<Service> {
-    return this.http.get<Service>(`${this.apiUrl}/service/${id}`);
+    return this.http.get<Service>(`${this.apiUrl}/service/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -52,26 +74,35 @@ export class ApiService {
    * @returns Observable with the created service
    */
   addService(service: Service): Observable<Service> {
-    return this.http.post<Service>(`${this.apiUrl}/service/add`, service);
+    return this.http.post<Service>(`${this.apiUrl}/service/add`, service)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   /**
    * Updates an existing service (admin only)
    * @param id - ID of the service to update
-   * @param service - Updated service data
+   * @param service - Updated service object
    * @returns Observable with the updated service
    */
   updateService(id: number, service: Service): Observable<Service> {
-    return this.http.put<Service>(`${this.apiUrl}/service/update/${id}`, service);
+    return this.http.put<Service>(`${this.apiUrl}/service/update/${id}`, service)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   /**
-   * Deletes a service by ID (admin only)
+   * Deletes a service (admin only)
    * @param id - ID of the service to delete
-   * @returns Observable that completes when deletion is successful
+   * @returns Observable with void
    */
   deleteService(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/service/delete/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/service/delete/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   /**
