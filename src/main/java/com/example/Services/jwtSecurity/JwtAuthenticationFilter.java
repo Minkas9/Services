@@ -1,11 +1,16 @@
 package com.example.Services.jwtSecurity;
 
+import com.example.Services.model.User;
+import com.example.Services.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Filter that processes JWT tokens in incoming requests.
@@ -22,7 +29,8 @@ import java.io.IOException;
  * - Extracts JWT token from Authorization header
  * - Validates the token
  * - Sets up Spring Security context if token is valid
- * - Allows request to proceed if no token is present (for public endpoints)
+ * - Checks if the user is banned
+ * - Returns appropriate error responses for invalid tokens or banned users
  */
 @Slf4j
 @Component
@@ -31,6 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * Processes each request to validate JWT tokens and set up authentication.
@@ -50,6 +60,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         log.debug("Processing request: {}", request.getRequestURI());
+
+        // Skip JWT processing for authentication endpoints and Swagger UI
+        if (request.getRequestURI().startsWith("/api/auth/") ||
+                request.getRequestURI().startsWith("/swagger-ui/") ||
+                request.getRequestURI().startsWith("/v3/api-docs/") ||
+                request.getRequestURI().equals("/swagger-ui.html")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
@@ -80,6 +99,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 log.debug("Authentication set in SecurityContext for user: {}", username);
+
+                // Check if user is banned
+                User user = userRepository.findByUsername(username).orElse(null);
+                if (user != null && user.isBanned()) {
+                    log.warn("Banned user {} attempted to access {}", username, request.getRequestURI());
+
+                    Map<String, String> error = new HashMap<>();
+                    error.put("error", "Account Banned");
+                    error.put("message",
+                            user.getBanReason() != null ? user.getBanReason() : "Your account has been banned");
+
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.getWriter().write(objectMapper.writeValueAsString(error));
+                    return;
+                }
             } else {
                 log.warn("Invalid token for user: {}", username);
             }

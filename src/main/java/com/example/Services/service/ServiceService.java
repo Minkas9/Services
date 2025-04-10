@@ -12,14 +12,35 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service class for managing Services entities.
+ * This class provides business logic for:
+ * - Retrieving services (with caching)
+ * - Adding new services
+ * - Updating existing services
+ * - Deleting services
+ * 
+ * It implements caching to improve performance for frequently accessed data.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServiceService {
+    // Name of the cache used for storing services
     private static final String CACHE_NAME = "services";
+    // Repository for service data persistence
     private final ServiceRepository serviceRepository;
+    // Cache manager for handling service caching
     private final CacheManager cacheManager;
 
+    /**
+     * Retrieves all services from the database or cache.
+     * This method first checks if the services are in the cache.
+     * If found in cache, returns the cached services.
+     * If not found, retrieves from the database, stores in cache, and returns.
+     * 
+     * @return List of all services
+     */
     public List<Services> getAllServices() {
         log.info("Fetching all services");
         Cache cache = cacheManager.getCache(CACHE_NAME);
@@ -36,15 +57,32 @@ public class ServiceService {
         return services;
     }
 
+    /**
+     * Adds a new service to the database.
+     * This method validates the service, saves it to the database,
+     * and clears the cache to ensure fresh data on next retrieval.
+     * 
+     * @param service The service to add
+     * @return The saved service with generated ID
+     * @throws IllegalArgumentException if service validation fails
+     */
     public Services addService(Services service) {
-        log.info("Adding new service: {}", service.getName());
         validateService(service);
+        log.info("Adding new service: {}", service.getName());
         Services savedService = serviceRepository.save(service);
         log.info("Service saved with ID: {}", savedService.getId());
         clearCache();
         return savedService;
     }
 
+    /**
+     * Deletes a service by its ID.
+     * This method checks if the service exists, deletes it from the database,
+     * and clears the cache to ensure fresh data on next retrieval.
+     * 
+     * @param id The ID of the service to delete
+     * @throws IllegalArgumentException if service with the given ID doesn't exist
+     */
     public void deleteServiceById(Long id) {
         log.info("Attempting to delete service with ID: {}", id);
         if (!serviceRepository.existsById(id)) {
@@ -56,6 +94,15 @@ public class ServiceService {
         clearCache();
     }
 
+    /**
+     * Retrieves a service by its ID from the database or cache.
+     * This method first checks if the service is in the cache.
+     * If found in cache, returns the cached service.
+     * If not found, retrieves from the database, stores in cache, and returns.
+     * 
+     * @param id The ID of the service to retrieve
+     * @return The service with the given ID, or null if not found
+     */
     public Services getService(Long id) {
         log.info("Fetching service with ID: {}", id);
         Cache cache = cacheManager.getCache(CACHE_NAME);
@@ -74,6 +121,16 @@ public class ServiceService {
         return service.orElse(null);
     }
 
+    /**
+     * Updates an existing service in the database.
+     * This method validates the service, checks if it exists, saves the updates,
+     * and clears the cache to ensure fresh data on next retrieval.
+     * 
+     * @param service The service with updated data
+     * @return The updated service
+     * @throws IllegalArgumentException if service validation fails or service
+     *                                  doesn't exist
+     */
     public Services updateService(Services service) {
         log.info("Updating service with ID: {}", service.getId());
         if (!serviceRepository.existsById(service.getId())) {
@@ -87,6 +144,13 @@ public class ServiceService {
         return updatedService;
     }
 
+    /**
+     * Validates a service before saving.
+     * This method checks if the service is null and if its name is not empty.
+     * 
+     * @param service The service to validate
+     * @throws IllegalArgumentException if validation fails
+     */
     private void validateService(Services service) {
         if (service == null) {
             log.error("Service cannot be null");
@@ -98,6 +162,11 @@ public class ServiceService {
         }
     }
 
+    /**
+     * Clears the service cache.
+     * This method is called after any operation that modifies services
+     * to ensure fresh data on next retrieval.
+     */
     private void clearCache() {
         log.info("Clearing service cache");
         Cache cache = cacheManager.getCache(CACHE_NAME);

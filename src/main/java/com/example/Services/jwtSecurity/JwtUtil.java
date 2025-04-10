@@ -91,14 +91,20 @@ public class JwtUtil {
 
     /**
      * Extracts the username from a JWT token.
+     * Returns null if the token is invalid or cannot be parsed.
      *
      * @param token The JWT token
-     * @return The username stored in the token
+     * @return The username stored in the token, or null if the token is invalid
      */
     public String extractUsername(String token) {
-        String username = extractClaim(token, Claims::getSubject);
-        log.debug("Extracted username from token: {}", username);
-        return username;
+        try {
+            String username = extractClaim(token, Claims::getSubject);
+            log.debug("Extracted username from token: {}", username);
+            return username;
+        } catch (Exception e) {
+            log.warn("Failed to extract username from token: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**

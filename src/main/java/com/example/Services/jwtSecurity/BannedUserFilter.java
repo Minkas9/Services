@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,10 +24,10 @@ import java.util.Map;
  * Filter that checks if a user is banned before allowing access to protected
  * resources.
  * This filter:
- * - Skips authentication endpoints
- * - Checks if the authenticated user is banned
- * - Returns a 403 Forbidden response if the user is banned
- * - Allows the request to proceed if the user is not banned
+ * - Skips checks for authentication endpoints
+ * - Retrieves the authenticated user from the security context
+ * - Checks if the user is banned in the database
+ * - Returns a 403 Forbidden response with ban reason if the user is banned
  */
 @Slf4j
 @Component
@@ -40,10 +40,10 @@ public class BannedUserFilter extends OncePerRequestFilter {
     /**
      * Processes each request to check if the authenticated user is banned.
      * The filter:
-     * 1. Skips check for authentication endpoints and Swagger UI
-     * 2. Gets the authenticated user from the security context
+     * 1. Skips check for authentication endpoints
+     * 2. Gets the authenticated user from security context
      * 3. Checks if the user is banned in the database
-     * 4. Returns a 403 error if banned, otherwise allows the request to proceed
+     * 4. Returns 403 Forbidden if the user is banned
      *
      * @param request     HTTP request
      * @param response    HTTP response
@@ -54,47 +54,40 @@ public class BannedUserFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        log.debug("Processing banned user check for request: {}", request.getRequestURI());
 
-        // Skip check for authentication endpoints and Swagger UI
+        // Skip banned user check for authentication endpoints and Swagger UI
         if (request.getRequestURI().startsWith("/api/auth/") ||
                 request.getRequestURI().startsWith("/swagger-ui/") ||
                 request.getRequestURI().startsWith("/v3/api-docs/") ||
                 request.getRequestURI().equals("/swagger-ui.html")) {
+            log.debug("Skipping banned user check for public endpoint");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Get the authentication
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getPrincipal() == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            log.debug("Checking ban status for user: {}", username);
 
-        // Get the authenticated user
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-
-            // Check if user is banned
-            User user = userRepository.findByUsername(username)
-                    .orElse(null);
-
+            User user = userRepository.findByUsername(username).orElse(null);
             if (user != null && user.isBanned()) {
                 log.warn("Banned user {} attempted to access {}", username, request.getRequestURI());
 
-                // Prepare error response
                 Map<String, String> error = new HashMap<>();
                 error.put("error", "Account Banned");
                 error.put("message",
                         user.getBanReason() != null ? user.getBanReason() : "Your account has been banned");
 
-                // Set response
                 response.setStatus(HttpStatus.FORBIDDEN.value());
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 response.getWriter().write(objectMapper.writeValueAsString(error));
                 return;
             }
+            log.debug("User {} is not banned, proceeding with request", username);
+        } else {
+            log.debug("No authenticated user found, skipping ban check");
         }
 
         filterChain.doFilter(request, response);
