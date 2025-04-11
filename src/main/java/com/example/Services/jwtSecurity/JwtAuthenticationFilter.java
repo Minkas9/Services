@@ -23,15 +23,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Filter that processes JWT tokens in incoming requests.
- * This filter:
- * - Extracts JWT token from Authorization header
- * - Validates the token
- * - Sets up Spring Security context if token is valid
- * - Checks if the user is banned
- * - Returns appropriate error responses for invalid tokens or banned users
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -42,20 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
-    /**
-     * Processes each request to validate JWT tokens and set up authentication.
-     * The filter:
-     * 1. Extracts JWT token from Authorization header
-     * 2. Validates the token if present
-     * 3. Loads user details if token is valid
-     * 4. Sets up Spring Security context with user authentication
-     *
-     * @param request     HTTP request
-     * @param response    HTTP response
-     * @param filterChain Filter chain to continue processing
-     * @throws ServletException if servlet error occurs
-     * @throws IOException      if I/O error occurs
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -100,7 +77,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 log.debug("Authentication set in SecurityContext for user: {}", username);
 
-                // Check if user is banned
                 User user = userRepository.findByUsername(username).orElse(null);
                 if (user != null && user.isBanned()) {
                     log.warn("Banned user {} attempted to access {}", username, request.getRequestURI());

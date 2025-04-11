@@ -20,15 +20,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Filter that checks if a user is banned before allowing access to protected
- * resources.
- * This filter:
- * - Skips checks for authentication endpoints
- * - Retrieves the authenticated user from the security context
- * - Checks if the user is banned in the database
- * - Returns a 403 Forbidden response with ban reason if the user is banned
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,20 +28,6 @@ public class BannedUserFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
-    /**
-     * Processes each request to check if the authenticated user is banned.
-     * The filter:
-     * 1. Skips check for authentication endpoints
-     * 2. Gets the authenticated user from security context
-     * 3. Checks if the user is banned in the database
-     * 4. Returns 403 Forbidden if the user is banned
-     *
-     * @param request     HTTP request
-     * @param response    HTTP response
-     * @param filterChain Filter chain to continue processing
-     * @throws ServletException if servlet error occurs
-     * @throws IOException      if I/O error occurs
-     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -66,6 +43,7 @@ public class BannedUserFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Gaunama autentifikacijos informacija apie dabartinį vartotoją
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             String username = authentication.getName();
@@ -90,6 +68,7 @@ public class BannedUserFilter extends OncePerRequestFilter {
             log.debug("No authenticated user found, skipping ban check");
         }
 
+        // Jei viskas tvarkoje – perduodam kontrolę tolesniems filtrams / endpoint'ui
         filterChain.doFilter(request, response);
     }
 }

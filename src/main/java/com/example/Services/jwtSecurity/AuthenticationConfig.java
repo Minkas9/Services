@@ -13,58 +13,32 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.Collections;
 
 /**
- * Configuration class for Spring Security authentication components.
- * This class provides beans for:
- * - Password encoding (BCrypt)
- * - Authentication manager setup
- * 
- * It configures the authentication provider to use the custom
- * UserDetailsService
- * and the BCryptPasswordEncoder for secure password handling.
+ * Ši klasė yra Spring konfigūracija, kuri nustato autentifikavimui reikalingus komponentus.
  */
 @Configuration
 @RequiredArgsConstructor
 public class AuthenticationConfig {
 
-    // Custom UserDetailsService implementation for loading user details
+    // Paslaugų klasė, kuri įkelia vartotojo duomenis pagal naudotojo vardą
     private final UserDetailsService userDetailsService;
 
-    /**
-     * Creates a BCryptPasswordEncoder bean for secure password hashing.
-     * BCrypt is a strong one-way hashing function designed specifically for
-     * passwords.
-     * 
-     * @return BCryptPasswordEncoder instance for password encoding
-     */
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures and creates the AuthenticationManager bean.
-     * This bean is responsible for processing authentication requests.
-     * 
-     * The implementation:
-     * 1. Creates a DaoAuthenticationProvider
-     * 2. Sets the custom UserDetailsService for user lookup
-     * 3. Sets the BCryptPasswordEncoder for password verification
-     * 4. Wraps the provider in a ProviderManager
-     * 
-     * @param authConfig         Spring's AuthenticationConfiguration
-     * @param userDetailsService Custom UserDetailsService implementation
-     * @param passwordEncoder    BCryptPasswordEncoder for password verification
-     * @return Configured AuthenticationManager
-     * @throws Exception if configuration fails
-     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authConfig,
             UserDetailsService userDetailsService,
             BCryptPasswordEncoder passwordEncoder) throws Exception {
+
+        // Sukuriamas autentifikavimo tiekėjas, kuris naudoja mūsų UserDetailsService ir šifravimą
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
+
+        // Sukuriamas ir grąžinamas autentifikavimo valdytojas (manager)
         return new ProviderManager(Collections.singletonList(provider));
     }
 }

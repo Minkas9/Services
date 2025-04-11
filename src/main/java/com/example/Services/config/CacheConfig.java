@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CacheConfig {
 
-    //beanso configas reikalinhas cachui naudoti
+    //beanso configas reikalingas cachui naudoti
     @Bean
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager("services");
